@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:job-boards.greenhouse.io)",
       "Bash(npx:*)",
-      "Bash(yes:*)"
+      "Bash(yes:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
