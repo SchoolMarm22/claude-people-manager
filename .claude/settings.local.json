@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:job-boards.greenhouse.io)",
+      "Bash(npx:*)",
+      "Bash(yes:*)"
+    ]
+  }
+}
