@@ -1,0 +1,210 @@
+// Claude People Manager - Data Model
+//
+// Design Decision (see ADR-004): We use a unified Person model that can represent
+// both candidates and employees. In production HR systems, these are typically
+// separate databases (Greenhouse for candidates, Workday for employees), which
+// creates a gap when a candidate becomes an employee. A unified model preserves
+// the full lifecycle and enables Claude to reason across hiring → onboarding → growth.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// HIRING PIPELINE (Fully Built)
+// ============================================================================
+
+model Candidate {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String   @unique
+  phone         String?
+  linkedIn      String?
+  resumeText    String   // Raw resume text content
+  resumeUrl     String?  // Original file URL/path
+  source        String   @default("direct") // direct, referral, linkedin, etc.
+
+  // Pipeline state
+  stage         String   @default("applied") // applied, screening, interview, offer, hired, rejected
+  stageUpdatedAt DateTime @default(now())
+
+  // Repeat candidate detection
+  // EM Note: At my company, we've accidentally re-screened candidates who applied
+  // 6 months prior. No one remembered. A unified system catches this automatically.
+  previousApplicationId String?
+  previousApplication   Candidate? @relation("RepeatCandidate", fields: [previousApplicationId], references: [id])
+  futureApplications    Candidate[] @relation("RepeatCandidate")
+
+  // Claude screening results
+  screeningResult  ScreeningResult?
+
+  // Interview process
+  interviews       Interview[]
+  feedbackSummary  FeedbackSummary?
+
+  // Metadata
+  appliedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  notes         String?
+
+  // Tags for filtering/search
+  tags          CandidateTag[]
+
+  // Job requisition
+  jobReqId      String
+  jobReq        JobRequisition @relation(fields: [jobReqId], references: [id])
+}
+
+model JobRequisition {
+  id              String   @id @default(cuid())
+  title           String
+  department      String
+  level           String   // L3, L4, L5, etc.
+  description     String
+  requirements    String   // JSON array of requirements
+  niceToHaves     String?  // JSON array
+  status          String   @default("open") // open, paused, closed, filled
+  hiringManagerId String?
+
+  candidates      Candidate[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ScreeningResult {
+  id            String   @id @default(cuid())
+  candidateId   String   @unique
+  candidate     Candidate @relation(fields: [candidateId], references: [id])
+
+  // Structured Claude evaluation
+  overallScore    Int      // 1-5
+  relevanceScore  Int      // 1-5: How relevant is their experience?
+  skillsScore     Int      // 1-5: Do they meet the technical requirements?
+  experienceScore Int      // 1-5: Do they have the right level of experience?
+
+  // Claude's reasoning (transparency is key)
+  summary         String   // 2-3 sentence overview
+  strengths       String   // JSON array of strengths
+  concerns        String   // JSON array of concerns
+  reasoning       String   // Claude's full reasoning chain
+
+  // Recommendation
+  recommendation  String   // advance, hold, reject
+
+  // Eval metadata — which model/prompt version produced this
+  // (See ADR-002: In production, we'd track prompt versions to correlate
+  // with bias eval results over time)
+  modelVersion    String   @default("claude-sonnet-4-20250514")
+  promptVersion   String   @default("v1")
+
+  createdAt       DateTime @default(now())
+}
+
+// ============================================================================
+// INTERVIEW FEEDBACK (Fully Built)
+// ============================================================================
+
+model Interview {
+  id            String   @id @default(cuid())
+  candidateId   String
+  candidate     Candidate @relation(fields: [candidateId], references: [id])
+
+  interviewerName  String
+  interviewerRole  String   // "hiring_manager", "peer", "cross_functional", "bar_raiser"
+  interviewType    String   // "technical", "behavioral", "system_design", "culture"
+
+  // Raw feedback from the interviewer
+  feedback      InterviewFeedback?
+
+  scheduledAt   DateTime
+  completedAt   DateTime?
+  status        String   @default("scheduled") // scheduled, completed, cancelled, no_show
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model InterviewFeedback {
+  id            String   @id @default(cuid())
+  interviewId   String   @unique
+  interview     Interview @relation(fields: [interviewId], references: [id])
+
+  // Structured feedback
+  overallRating   Int      // 1-4 (strong no hire, no hire, hire, strong hire)
+  technicalRating Int?     // 1-5 (if applicable)
+  communicationRating Int? // 1-5
+
+  // Free-text feedback from interviewer
+  strengths     String
+  concerns      String
+  rawNotes      String   // Full interviewer notes
+
+  // Hire recommendation
+  recommendation String   // strong_no_hire, no_hire, hire, strong_hire
+
+  submittedAt   DateTime @default(now())
+}
+
+// AI-synthesized summary of all interview feedback for a candidate
+model FeedbackSummary {
+  id            String   @id @default(cuid())
+  candidateId   String   @unique
+  candidate     Candidate @relation(fields: [candidateId], references: [id])
+
+  // Claude-generated synthesis
+  summary           String   // Overall synthesis
+  consensusPoints   String   // JSON: What all interviewers agreed on
+  divergencePoints  String   // JSON: Where interviewers disagreed (important for debiasing)
+
+  // EM Note: Divergence detection is critical. In my experience, when one
+  // interviewer rates "strong no hire" and another rates "strong hire," it
+  // almost always means one of them is anchoring on something irrelevant.
+  // Claude can flag this pattern for the hiring manager to investigate.
+
+  riskFactors       String   // JSON: Potential bias indicators Claude detected
+  recommendation    String   // Overall recommendation with confidence
+  confidence        String   // high, medium, low
+
+  modelVersion      String   @default("claude-sonnet-4-20250514")
+  promptVersion     String   @default("v1")
+
+  createdAt         DateTime @default(now())
+}
+
+model CandidateTag {
+  id          String   @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  tag         String
+
+  @@unique([candidateId, tag])
+}
+
+// ============================================================================
+// ONBOARDING (Stub — see docs/vision/onboarding.md)
+// ============================================================================
+
+// Intentionally left as a stub. See docs/vision/onboarding.md for the full
+// vision of how Claude would generate personalized onboarding plans based on
+// role, team, and the candidate's interview feedback (what they're already
+// strong at vs. what they need to ramp on).
+
+// ============================================================================
+// TIMESHEET / PTO (Stub — see docs/vision/timesheet-pto.md)
+// ============================================================================
+
+// Intentionally left as a stub. See docs/vision/timesheet-pto.md for the
+// EM pain narrative and the longitudinal planning insight.
+
+// ============================================================================
+// MANAGER EFFECTIVENESS (Stub — see docs/vision/manager-effectiveness.md)
+// ============================================================================
+
+// Intentionally left as a stub. See docs/vision/manager-effectiveness.md.

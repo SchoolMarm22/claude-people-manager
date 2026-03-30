@@ -4,7 +4,9 @@
       "WebFetch(domain:job-boards.greenhouse.io)",
       "Bash(npx:*)",
       "Bash(yes:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)"
     ]
   }
 }
