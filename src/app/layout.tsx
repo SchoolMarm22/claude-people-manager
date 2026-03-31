@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppFooter } from "@/components/layout/app-footer";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <AppFooter />
         </main>
+        <Analytics />
       </body>
     </html>
   );
