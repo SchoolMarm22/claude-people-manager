@@ -1,0 +1,129 @@
+Notes for Second Pass on Demo
+
+- Homepage
+    - Needs to be an explainer. 
+    - “Hi I’m Chris! I’m applying for the [Engineering Manager of People Products](https://job-boards.greenhouse.io/anthropic/jobs/5119478008) position”.
+    - Since this is position is about shipping products, I thought I would make a demo of some of my ideas. Some of the features have API integrations and some are just mocked data (you’ll see the notes). 
+    - I have a couple of foundational thoughts here that drove this little project, and how it should function:
+        - 1) This is a tool for humans working with other humans. AI should be used to enhance and improve that experience, but never to replace a human’s judgement or subordinate humans to computers.
+        - 2) This should be configurable based on needs. Hiring and managing the cleaning crew has different needs and processes than hiring for Dev Ops engineers. The system should enable and adapt to the needs at hand.
+        - 3) This should function as a synthesis layer over existing tools, to provide a unified operating system. There are lots of existing tooling around hiring and managing, we can preserve those systems of record creating a better user experience. 
+    - Please, take a look! Play around with it! I’ve included a lot of notes on my thinking, from a product and technical perspective, I hope it sparks some ideas. (Have a curved SVG arrow pointing towards the side bar menu)
+- Navigation:
+    - I like including my LinkedIn link here it is: (https://www.linkedin.com/in/chris-martin-dev/) pleas update.
+    - Remove all other external links, except for the application link in the intro
+    - Instead of cards on the homepage, let’s make this look like a real tool. Have a side bar nav with these tabs:
+        - Job Postings
+        - Application Screenings
+        - Interview Prep
+        - Interview
+        - Interview Notes
+        - Onboarding
+        - 1:1s
+        - Performance Reviews
+        - Offboarding
+        - Divider line
+        - Account
+    - Job Postings - 
+        - Notes from Chris call out at the top:
+            - A couple thoughts here:
+                - Product Notes:
+                - There are legal requirements in job postings; salary transparency in some states, disability and veterans acknowledgements, etc. So there is some need for a templatized approach, for HR and legal reasons. 
+                - Different hiring departments and teams need different positions, so we need a way for them to input exactly what skills, experience, etc, they need. 
+                - Additionally, there may be some corporate boilerplate that is included as well.
+                - So, we can have saveable spec files, that tailor individual postings based on team requirements.
+                - Depending on the internal processes, (legal, HR, or compliance review) there could be some way of submitting the posting for review, requiring some level of approval before it’s free to submit
+                - Technical Notes
+                - There are existing sites that people post job openings on. So we’ll need some kind of API to post these openings to. 
+                - I don’t know offhand, but we’d likely need some kind of normalization layer to handle differences in API requirements from Indeed or LinkedIn or Greenhouse, etc.
+                - A simple DTO that transforms the inputs into the appropriate structure should work well enough.
+                - Auth into those portals is trickier. SSO is a potential, we can pass along some kind of token, maybe, but just because we _can_ doesn’t meant mean we _should_
+                - A more manual, but more secure approach would be outputting formatted data that can be easily copy and pasted into the job site works as well.
+    - Application Screenings
+        - This is the critical area in my opinion. Prospective employees and hiring managers are in an AI arms race. It’s trivial now for people to apply to thousands of positions, so hiring mangers have a massive number of applications to review.
+        - LLM review, as a first pass helps with several things
+            - 1) It can help remove latent bias from the process
+            - 2) It can screen a candidate more holistically than ATS keyword monitors
+            - 3) It can take in personalized screening criteria via spec files.
+        - This third point is the one that gets me the most excited! Here’s an example:
+            - Candidate A was a full stack dev at Meta for 3 years. 
+            - Candidate B was a full stack dev at seed funded startup for 3 years.
+            - On paper, they might have very similar backgrounds, work with the same tech, etc. But we can provide tailored spec files explaining what we’re looking for in more detail than the original job posting. 
+                - (See example spec files. Additionally, let’s create several more, showing hiring for marketing positions as well)
+            - This lets the hiring manager/team inject a lot more art that they use when screening resumes and interviewing people. 
+            - And because it’s spec driven, we can re-use this approach across all job postings, fields, etc. We’re comparing:
+                - The posting
+                - The application
+                - The spec file
+                - And having an LLM assess and critique the applicant. 
+            - We can then sort applications into buckets, from best to least fit, showing what must haves and what nice to haves are checked, as well as any kind of intangibles assessment, the qualitative side.
+        - Technical Note:
+            - We’d have to have some kind of API to pull all of the applicants in to our system, tag with a unique identifier, store their data, resume, etc.
+            - Since there is PII contained in resumes (email, phone, address, name, etc) security is a real concern
+            - Not only security from a general perspective, but internal as well. You don’t want anyone to be able to find applicants or future employees’ phone numbers or addresses for example.
+            - Finding ways of presenting resumes, while obfuscating PII is interesting, and would depend on API outputs from Greenhouse or wherever 
+    - Interview Prep
+        - This is an area, as a hiring manger, I personally struggle with. I’m in the middle of things and I have to jump on a 30 minute screening call. I often up defaulting to a stock list of questions while I re-review their resume. 
+        - It’s not empathetic with the interviewee and I end up making snap judgements based on some questions I always use.
+        - Having an LLM draw up a list of questions and items to investigate personalizes the interview
+            - It can compare the application and resume with the posting and spec requirements, to find areas of congruence to dive into, and interesting follow up questions or differences
+            - It can find assertions to push back on, generate deeper questions, etc
+        - It can even output a quick summary of the candidate as a much needed refresher when you’re going through 6 interviews in a day. 
+        - This is something I really wish I had at my current position!
+    - Interview
+        - This is intentional blank. 
+        - There are a myriad of ways to interview people, and it’s difficult to show horn in a solution here. I’d rather think on this one instead of putting out a half baked idea full of holes.
+        - Basically, what if it’s in person? Do we record the whole thing so an LLM can ingest it? That’s not empathic to the interviewee or interviewers. 
+        - What if it’s on Webex or Google Meet or Zoom? Same deal, should we treat this persons time as a commodity for transcription? 
+        - I just don’t have any solid ideas on this one at the moment, other than to highlight: This is case where AI can be used, but should it be used is the better question. 
+    - Interview Debrief
+        - This one is a big challenge at my current position.
+        - We have a shared Trello board that people leave notes (of extremely variable quality) on candidates cards.
+        - That helps track people who’ve interviewed multiple times or have worked in different orgs/teams
+        - But typically it’s just the hiring manager typing out a sentence, maybe 3, with a yes or no on the next steps.
+        - Systematizing the feedback, across rounds and interviewers, provides a much more comprehensive view of the candidate. 
+        - Assessments can be quantified, and various text inputs can be added based on the spec file input for the requirements! 
+        - And LLMs can be used to summarize all of the various commenters notes and assessments, and most interestingly! They can also highlight internal disagreements! 
+            - Finding points of friction vs points of agreement is a valuable signal to a team!
+        - Additionally, the interviewers themselves can be assessed. 
+            - Does Interviewer A always rank a gender lower?
+            - Does interviewer B uniformly provide negative feedback?
+            - Does interviewer C seem to just phone it in, just adding LGTM?
+            - These internal notes can help hiring mangers improve their interview pipelines!
+    - Onboarding
+        - This again is very team specific
+        - Using a spec driven process is helpful
+            - We may need some API access to Jira/Linear for any kind of tickets, or other tracking systems
+                - Is their laptop finished by IT?
+                - Is your laptop set up?
+                - Have you completed any required trainings (HR, PCI, OWASP, etc)
+                - Have your background checks come through?
+                - etc
+            - This can provide a manger with an at a glance understanding of where their new hire is.
+            - If you onboard 1 person, that’s easy enough. I once had to onboard 8 devs in India all at once, and it was tough from a paperwork perspective!
+        - Then there is team level onboarding (can consider the above as Company level onboarding)
+            - Team level involves tooling setup, account setup, code base or data sharing, tours through existing programs/functions/features. As well as introductions to the new things they will be working.
+        - There is a perfect way to condense this down into spec files, or using tools (looking at you Claude Code and Claude CoWork) to help get new hires up to speed ASAP.
+            - Basically, ask these LLMs instead of having a person hold your hand
+    - 1:1s
+        - One of the most important, but easily overlooked aspects of people managing is taking notes!
+        - Any time you have a 1:1 it’s not just important to build rapport and hear the concerns of your employee, but you need a paper trails
+            - Whether that’s tracking all of the wonderful contributions they are making, helping them reach their goals, or documenting poor performance, a paper trail is key
+        - Having structured inputs, that are logged over time helps develop that.
+        - One this page, we just have mocked data, showing 3 different engineers (selectable from a list) which expands to show a reverse chronological list of notes from 1:1s
+        - There is also a button that will use an LLM to quickly summarize your notes on this individual
+        - Potentially a chat window to ask questions (did Revathy say that her she was getting married in July or August? We need to set up a team lunch to celebrate)
+    - Performance Reviews
+        - This one left intentionally blank
+            - I’m just spinning up a prototype, I haven’t put enough thought into this one yet.
+            - Obviously this is very important, getting talented people into positions where they can have the most impact is critical.
+            - I just only had some time to spend on this demo
+    - Divider line
+    - Account
+        - Add a star or something next to this one I want people to click on it
+        - Note from Chris:
+            - Thank you for checking out my little demo here. Hopefully some of these ideas are resonating with you!
+            - One thing I really want to highlight here is the spec based abstraction.
+            - I don’t have any internal knowledge on the direction of this position, beyond helping Anthropic find, hire, and retain the best possible people. But, I also know that tools like Claude Code and Cowork were built to scratch an internal itch and turned in massive product successes. 
+            - This spec driven approach can provide the same type of tooling for enterprises and SMBs.
+            - Building a wonderful internal product is clearly the primary goal, but keeping abstracted and spec driven provides an opportunity for further product extensions into the Claude ecosystem.

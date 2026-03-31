@@ -123,22 +123,25 @@ Tailwind: `border border-gray-200 rounded-md px-5 py-2.5 hover:bg-gray-50 transi
 
 Small pill shape: `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium`
 
-### Builder's Note Component
+### ChrisNote Component (Notes from Chris)
 
 ```
 Container:
-  - Background: var(--bg-builder-note) → bg-[#FDF8F0]
-  - Left border: 3px solid var(--accent-primary) → border-l-[3px] border-l-[#D97757]
-  - Padding: 16px → p-4
-  - Border-radius: 0 on left, 6px on right → rounded-r-md
-  - Margin: 24px 0 → my-6
+  - Background: bg-[#FDF8F0]
+  - Border: 1px solid var(--accent-primary)/20
+  - Border-radius: 12px (rounded-xl)
+  - Padding: 20px (p-5)
+  - Margin-bottom: 32px (mb-8)
+  - Always visible (not behind a toggle)
 
 Label:
-  - "🔨 Builder's Note"
-  - text-xs font-semibold text-[#D97757] uppercase tracking-wide mb-1
+  - "💬 NOTES FROM CHRIS"
+  - text-xs font-semibold text-[#D97757] uppercase tracking-wider mb-2
+  - MessageCircle icon from lucide-react
 
 Content:
-  - text-sm text-gray-700 leading-relaxed
+  - text-sm text-[#4A4A4A] leading-relaxed
+  - space-y-3 for paragraph spacing
 ```
 
 ### Spec Editor (for Screening + Interview Prep modules)
@@ -155,18 +158,24 @@ Content:
 
 ### Navigation
 
-**Top nav bar:**
-- Clean, minimal
-- Left: "People Products Demo" as text link to home
-- Right: "Built by Chris Martin" with small links (Resume · LinkedIn · Book)
-- Background: white with bottom border
-- Height: 56-64px
-- Sticky top
+**Sidebar (fixed left):**
+- Width: 256px (w-64)
+- Full height, fixed position
+- Logo: "People Products" with Sparkles icon
+- 12 nav items with status badges (Live AI / Demo / Concept)
+- Account link with gold star at bottom
+- Divider before Account
+
+**Status Badges:**
+```
+🟢 Live AI:   bg-green-100 text-green-700 border-green-200
+🔵 Demo:      bg-blue-100 text-blue-700 border-blue-200
+🟣 Concept:   bg-violet-100 text-violet-600 border-violet-200
+```
 
 **Module pages:**
-- Back arrow + "Back to Overview" link at top
-- Module title + status badge
-- Breadcrumb is optional — the back link is sufficient
+- Module title + status badge (no back link — sidebar handles navigation)
+- Max-width: max-w-5xl
 
 ---
 

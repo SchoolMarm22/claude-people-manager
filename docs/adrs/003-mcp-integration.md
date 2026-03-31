@@ -1,64 +1,58 @@
 # ADR-003: MCP Integration Architecture
 
-**Status:** Proposed (Stubs Only)
-**Date:** 2026-03-24
+**Status:** Partially Implemented
+**Date:** 2026-03-24 (Updated 2026-03-30)
 **Author:** Christopher Martin
 
 ## Context
 
-In production, this platform would need to integrate with existing HR tools rather than replace them entirely. Anthropic's Model Context Protocol (MCP) provides a standardized way for Claude to interact with external systems.
+This platform needs to integrate with existing HR tools rather than replace them. Anthropic's Model Context Protocol (MCP) provides a standardized way for Claude to interact with external systems through a resource/tool model.
 
-## Proposed MCP Servers
+## What We Built
+
+### Spec File MCP Server (Implemented)
+
+A working MCP server (`src/mcp/index.ts`) that:
+
+1. **Exposes hiring specs as resources** — 4 spec files available via `spec://` URI scheme
+2. **Provides a screening tool** — `screen_resume` tool calls Claude API to evaluate resumes against specs
+3. **Uses StdioServerTransport** — Compatible with Claude Desktop, Claude Code, and any MCP client
+
+This proves the core thesis: spec files are portable. The same specs that drive the web app's screening UI can be accessed from any MCP-compatible surface. A recruiter can say "pull up Cindi's hiring spec and screen this resume" in Claude Desktop without ever opening the web app.
+
+### Configuration
+
+```json
+{
+  "mcpServers": {
+    "people-products": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/index.ts"],
+      "cwd": "/path/to/claude-people-manager"
+    }
+  }
+}
+```
+
+## Proposed Future MCP Servers
 
 ### Greenhouse MCP Server (ATS Integration)
-```
-Purpose: Sync candidate data, job postings, and pipeline stages
-Direction: Bidirectional
-- Read: Pull new applications, job requisitions, interview schedules
-- Write: Push screening results, stage transitions, notes
-
-Why MCP over REST: Claude can reason about Greenhouse data in context.
-Instead of: "fetch candidate → process → update candidate"
-We get: "Claude, review this candidate's full history in Greenhouse
-         and our internal notes, then recommend next steps"
-```
+- **Direction:** Bidirectional
+- **Read:** Pull new applications, job requisitions, interview schedules
+- **Write:** Push screening results, stage transitions, notes
+- **Value:** Claude can reason about Greenhouse data in context, not just shuttle data between systems
 
 ### Workday MCP Server (Employee Records)
-```
-Purpose: Bridge candidate → employee transition, access org data
-Direction: Primarily read
-- Read: Org structure, team composition, employee profiles
-- Write: Trigger onboarding workflows post-hire
-
-Key value: When Claude screens a candidate, it can consider:
-- What the team currently looks like (skills gaps to fill)
-- Who would be their manager/peers
-- Historical hiring patterns for this team
-```
+- **Direction:** Primarily read
+- **Read:** Org structure, team composition, employee profiles
+- **Write:** Trigger onboarding workflows post-hire
+- **Value:** When screening, Claude can consider what the team currently looks like and what skills gaps need filling
 
 ### Slack MCP Server (Communication)
-```
-Purpose: Notifications, interview scheduling, feedback collection
-Direction: Bidirectional
-- Read: Interview feedback submitted via Slack forms
-- Write: Screening result notifications, interview reminders
-
-Why this matters: Interviewers already live in Slack. Meeting them
-where they are reduces friction in the feedback loop.
-```
-
-### Calendar MCP Server (Scheduling)
-```
-Purpose: Interview scheduling optimization
-Direction: Read + suggest
-- Read: Interviewer availability
-- Suggest: Optimal interview slots considering panel diversity,
-  interviewer load balancing, and candidate timezone
-
-This is where Claude shines: "Schedule a system design interview
-with someone who hasn't interviewed this week and has distributed
-systems expertise" is a natural language query that MCP makes possible.
-```
+- **Direction:** Bidirectional
+- **Read:** Interview feedback submitted via Slack forms
+- **Write:** Screening result notifications, interview reminders
+- **Value:** Meet interviewers where they already work
 
 ## Architecture
 
@@ -73,24 +67,21 @@ systems expertise" is a natural language query that MCP makes possible.
 │  ┌────┴────────────┴────────────┴────┐  │
 │  │       MCP Client Layer            │  │
 │  │  (standardized tool interface)    │  │
-│  └──┬──────┬──────────┬──────────┬───┘  │
-└─────┼──────┼──────────┼──────────┼──────┘
-      │      │          │          │
-   ┌──┴──┐ ┌─┴──┐ ┌────┴───┐ ┌───┴────┐
-   │Green│ │Work│ │ Slack  │ │Calendar│
-   │house│ │day │ │        │ │        │
-   └─────┘ └────┘ └────────┘ └────────┘
+│  └──┬──────┬──────────┬─────────────┘  │
+└─────┼──────┼──────────┼────────────────┘
+      │      │          │
+   ┌──┴──┐ ┌─┴──┐ ┌────┴───┐
+   │Green│ │Work│ │ Slack  │
+   │house│ │day │ │        │
+   └─────┘ └────┘ └────────┘
+
+   + Spec File MCP Server (implemented)
+   Exposes: 4 resources, 1 tool
+   Transport: stdio
 ```
 
-## Why Stubs, Not Implementations
+## Trade-offs
 
-1. MCP servers require access to real instances of these tools
-2. The protocol is still evolving — better to document the architecture than build against a moving target
-3. The value proposition is clear from the architecture alone
-
-## What the Stubs Show
-
-The `src/lib/mcp/` directory contains type definitions and interface contracts for each MCP server. These demonstrate:
-- Understanding of MCP's tool/resource model
-- Awareness of data flow patterns between systems
-- Practical knowledge of what these HR tools expose
+- **Implemented server is read-only + screening** — No write operations back to external systems yet
+- **Spec files are in-memory** — Production would need persistent storage with versioning
+- **Single transport** — stdio works for local usage; production would likely need SSE or HTTP for remote access

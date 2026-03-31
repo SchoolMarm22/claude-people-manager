@@ -4,67 +4,77 @@
 
 ## The Thesis
 
-HR workflows are fragmented across a dozen siloed tools. The integration of LLMs creates an opportunity not just to unify them, but to make them *smarter* — with appropriate guardrails.
+**Spec files are the universal abstraction for people management.**
 
-This project demonstrates what that looks like for the hiring pipeline: Claude as a transparent, auditable participant in resume screening and interview feedback synthesis.
+LLMs convert English into other things — code, actions, API requests, analysis. The same principle applies to managerial work. Hiring managers hold context in their heads as they screen resumes, prep for interviews, and run onboarding. We can get that context out of their heads and into markdown spec files, then let Claude apply those specs consistently at scale.
+
+This project demonstrates that approach across the full employee lifecycle: hiring, interviewing, onboarding, 1:1s, performance reviews, and offboarding.
 
 ## What's Built
 
-### Hiring Pipeline (Fully Functional)
-- **AI Resume Screening**: Claude evaluates candidates against job requirements with structured scores, explicit reasoning chains, and enumerated recommendations
-- **Interview Feedback Collection**: Structured feedback forms with per-dimension scoring
-- **AI Feedback Synthesis**: Claude aggregates multiple interviewer perspectives, surfaces consensus and divergence, and flags potential bias patterns
-- **Candidate Pipeline**: Kanban-style pipeline view across hiring stages
-- **Repeat Candidate Detection**: Automatic detection of re-applicants with context from previous applications
+### Live AI Features (Claude API)
+- **Application Screening** — Claude evaluates resumes against manager-defined spec files. Same resume, different spec = different score. Try it with 4 different resumes and 4 different specs.
+- **Interview Prep** — Given a resume + spec, Claude generates tailored questions with "what good looks like" and "red flags" for each.
+- **1:1 Note Summarization** — Claude summarizes structured 1:1 notes across time, surfacing patterns and retention signals.
+- **1:1 Chat** — Ask questions about your notes on any engineer, with full context passed to Claude.
 
-### What's Intentionally Stubbed (with Vision Docs)
+### Interactive Demos (Mock Data)
+- **Dashboard** — Pipeline metrics, candidate journey timeline (Alex Rivera from application to onboarding), and full candidate table.
+- **Job Postings** — Spec-driven posting generation with compliance badges and outbound architecture diagram.
+- **Interview Notes** — Cross-interviewer synthesis surfacing consensus, contradictions, and bias flags.
+- **Onboarding** — Company-level + team-level checklists informed by interview signal.
+- **MCP Server** — Working Model Context Protocol server exposing specs as resources and screening as a tool.
 
-Each stub module includes a dedicated vision document explaining the problem, the AI-native solution, and the data model extension:
+### Concept Pages (Intentionally Blank)
+- **Interview** — Deliberately left blank with notes on why AI shouldn't be blindly applied here.
+- **Performance Reviews** — Notes on spec-driven review frameworks adapted per role/level.
+- **Offboarding** — Notes on access revocation vs. knowledge capture.
 
-| Module | Vision Doc | Key Insight |
-|--------|-----------|-------------|
-| **Onboarding** | [docs/vision/onboarding.md](docs/vision/onboarding.md) | Interview feedback should inform onboarding — skip what they're strong at, focus where concerns were raised |
-| **Timesheet & PTO** | [docs/vision/timesheet-pto.md](docs/vision/timesheet-pto.md) | Unified time data enables predictive capacity planning and burnout detection |
-| **Manager Effectiveness** | [docs/vision/manager-effectiveness.md](docs/vision/manager-effectiveness.md) | 1:1 prep, growth tracking, and feedback quality coaching |
+## Architecture
 
-### Architecture Decision Records
-
-| ADR | Topic |
-|-----|-------|
-| [ADR-001](docs/adrs/001-structured-outputs.md) | Why structured Claude outputs over free-text |
-| [ADR-002](docs/adrs/002-eval-strategy.md) | **Eval strategy for hiring bias — why this is a "slow down" zone** |
-| [ADR-003](docs/adrs/003-mcp-integration.md) | MCP integration architecture (Greenhouse, Workday, Slack) |
-| [ADR-004](docs/adrs/004-unified-data-model.md) | Unified candidate/employee data model |
-| [ADR-005](docs/adrs/005-longitudinal-pto.md) | The case for longitudinal PTO data in sprint planning |
-
-## Why I Built This
-
-I'm an engineering manager. Every day I live in the gap between what HR tools do and what I actually need:
-
-- **Interview feedback** lives in Google Docs, Greenhouse, and Slack DMs. By the time we make a decision, half the signal is lost.
-- **Onboarding** is a one-size-fits-all checklist that ignores everything we learned about the person during interviews.
-- **PTO tracking** across 3 tools means sprint planning is guesswork.
-- **Promotion cases** are built by archaeology the week before the committee meets.
-
-This project is my vision for what a unified, AI-native people platform looks like — and, critically, where it needs guardrails.
-
-## The Most Important File in This Repo
-
-[ADR-002: Eval Strategy for Hiring Bias](docs/adrs/002-eval-strategy.md)
-
-I deliberately chose NOT to build the eval framework. Not because it's unimportant — it's the *most* important part — but because a half-baked bias eval suite is worse than no eval suite. It creates false confidence.
-
-ADR-002 documents what we would build, why, and how. It's where I demonstrate that I understand the stakes of AI in hiring: demographic swap tests, rubric consistency, feedback synthesis bias detection, and longitudinal tracking.
-
-**This is where you slow down and get it right.**
+```
+src/
+├── app/
+│   ├── overview/           # Spec-driven approach explainer
+│   ├── dashboard/          # Pipeline metrics + candidate journey
+│   ├── job-posting/        # Spec → posting generation + outbound flow
+│   ├── screening/          # Live AI resume screening (4 specs × 4 resumes)
+│   ├── interview-prep/     # Live AI question generation
+│   ├── interview/          # Concept — intentionally blank
+│   ├── debrief/            # Interview notes + AI synthesis
+│   ├── onboarding/         # Company + team onboarding checklists
+│   ├── one-on-ones/        # 1:1 notes + AI summary + chat
+│   ├── performance-reviews/# Concept with product notes
+│   ├── offboarding/        # Concept with product notes
+│   ├── mcp-server/         # MCP architecture + code samples
+│   ├── account/            # Closing pitch + spec recap
+│   └── api/
+│       ├── screen-resume/       # Claude screening endpoint
+│       ├── interview-prep/      # Claude question generation
+│       ├── one-on-one-summary/  # Claude 1:1 summarization
+│       └── one-on-one-chat/     # Claude conversational recall
+├── mcp/
+│   └── index.ts            # Working MCP server (stdio transport)
+├── components/
+│   ├── layout/             # Sidebar, footer, module layout
+│   ├── shared/             # ChrisNote callout component
+│   └── diagrams/           # Outbound/inbound flow diagrams
+└── lib/
+    ├── sample-specs.ts     # 4 hiring spec files
+    ├── mock-data.ts        # Engineers, candidates, scorecards
+    ├── mock-resumes.ts     # 3 fictional resumes
+    ├── chris-resume.ts     # Chris's actual resume
+    └── pipeline-data.ts    # Dashboard metrics + timeline
+```
 
 ## Tech Stack
 
-- **Next.js 16** (App Router, Server Components)
+- **Next.js 16** (App Router, Server Components + Client Components)
 - **TypeScript**
-- **Prisma + SQLite** (simple, portable)
-- **Claude API** (`@anthropic-ai/sdk`) with structured outputs
-- **Tailwind CSS + shadcn/ui**
+- **Tailwind CSS v4** (Anthropic-inspired warm palette)
+- **Claude API** (`@anthropic-ai/sdk`) for live AI features
+- **Model Context Protocol** (`@modelcontextprotocol/sdk`) for MCP server
+- **shadcn/ui** components
 
 ## Getting Started
 
@@ -72,55 +82,49 @@ ADR-002 documents what we would build, why, and how. It's where I demonstrate th
 # Install dependencies
 npm install
 
-# Set up environment
+# Set up environment (needed for live AI features)
 cp .env.example .env
 # Add your ANTHROPIC_API_KEY to .env
-
-# Initialize database
-npx prisma migrate dev
-
-# Seed with synthetic data
-npm run db:seed
 
 # Run development server
 npm run dev
 ```
 
-The app ships with pre-seeded synthetic data: 3 job requisitions, 11 candidates at various pipeline stages, completed interviews with feedback, and AI screening results. You can explore the full pipeline immediately.
+The app works without an API key — live AI features fall back to representative mock data.
 
-To trigger live AI screening or feedback synthesis, you'll need an `ANTHROPIC_API_KEY` in your `.env`.
+### MCP Server
 
-## Project Structure
+The MCP server can be used with Claude Desktop or any MCP-compatible client:
 
+```bash
+# Start the MCP server directly
+npm run mcp:start
+
+# Or configure in Claude Desktop
+# ~/Library/Application Support/Claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "people-products": {
+      "command": "npx",
+      "args": ["tsx", "src/mcp/index.ts"],
+      "cwd": "/path/to/claude-people-manager"
+    }
+  }
+}
 ```
-src/
-├── app/
-│   ├── dashboard/          # Overview with AI insights
-│   ├── hiring/             # Kanban pipeline view
-│   ├── candidates/[id]/    # Candidate detail with AI screening
-│   ├── interviews/         # Interview management
-│   ├── onboarding/         # Stub with vision narrative
-│   ├── timesheet/          # Stub with EM pain narrative
-│   ├── manager/            # Stub with vision narrative
-│   └── api/
-│       ├── screening/      # Claude resume screening endpoint
-│       └── feedback-summary/ # Claude feedback synthesis endpoint
-├── lib/
-│   ├── claude/             # Claude integration (screening, synthesis)
-│   ├── db/                 # Prisma client
-│   └── mcp/               # MCP integration type stubs
-├── components/
-│   ├── hiring/             # Screen & synthesize buttons
-│   └── layout/             # Sidebar navigation
-docs/
-├── adrs/                   # Architectural Decision Records
-├── vision/                 # Module vision docs
-└── evals/                  # Eval methodology (see ADR-002)
-prisma/
-├── schema.prisma           # Data model (heavily commented)
-└── seed.ts                 # Synthetic demo data
-```
+
+## Design Decisions
+
+Every page includes "Notes from Chris" callouts explaining product thinking, technical tradeoffs, and areas where AI should (or shouldn't) be applied. These are the most important part of the demo — they show judgment, not just code.
+
+Key architectural decisions:
+- **Spec-driven everything** — Every feature traces back to configurable markdown spec files
+- **Live AI with graceful fallback** — Claude API calls with mock data fallback when unavailable
+- **Always-visible product notes** — Not hidden behind toggles; the thinking is the product
+- **Intentional gaps** — Some pages are blank on purpose, with notes on why
 
 ## About Me
 
 I'm Christopher Martin, an engineering manager who believes the intersection of AI and people practices is one of the most impactful — and most responsibility-laden — areas in tech right now. This project is my attempt to show both the opportunity and the restraint required to do it well.
+
+[LinkedIn](https://www.linkedin.com/in/chris-martin-dev/)
