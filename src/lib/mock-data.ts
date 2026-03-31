@@ -419,3 +419,171 @@ export const MOCK_INTERVIEW_PREP = {
   interviewer_context:
     "Chris's background is unusual: military → startups → enterprise → solo AI products. The military experience may surface in how he frames leadership (mission-first, direct communication). His startups were early-stage with small teams, so 'led' may mean 'was the only developer.' The AI projects are built with Claude, which is relevant given we build with Claude. Ask about his actual vs. Claude-assisted contributions.",
 };
+
+// ============================================================================
+// 1:1 NOTES — MOCK ENGINEERS AND NOTES
+// ============================================================================
+
+export interface OneOnOneNote {
+  id: string;
+  date: string;
+  summary: string;
+  details: string;
+  mood: "positive" | "neutral" | "concern";
+  tags: string[];
+}
+
+export interface Engineer {
+  id: string;
+  name: string;
+  role: string;
+  team: string;
+  startDate: string;
+  avatar: string;
+  notes: OneOnOneNote[];
+}
+
+export const ENGINEERS: Engineer[] = [
+  {
+    id: "revathy",
+    name: "Revathy Krishnamurthy",
+    role: "Senior Software Engineer",
+    team: "Product Engineering",
+    startDate: "2024-06-15",
+    avatar: "RK",
+    notes: [
+      {
+        id: "r1",
+        date: "2026-03-28",
+        summary: "Sprint retro follow-up — excited about new architecture initiative",
+        details: "Revathy brought up the microservices migration again. She has a strong opinion that we should start with the auth service and I think she's right. She wants to lead the RFC — I told her to go for it. Also mentioned she's been mentoring two of the junior devs on testing patterns. She doesn't ask for credit for this but I want to make sure it shows up in her next review. Personal note: she mentioned her wedding is in July. Need to coordinate with the team on a celebration.",
+        mood: "positive",
+        tags: ["architecture", "mentoring", "leadership"],
+      },
+      {
+        id: "r2",
+        date: "2026-03-14",
+        summary: "Concerned about on-call rotation burnout",
+        details: "Revathy flagged that the on-call rotation is wearing on her. She's been covering extra shifts because Marcus has been out. She's not complaining — she's proposing solutions. Suggested we hire a dedicated SRE or at minimum redistribute the rotation more evenly. I agree and will bring it up with David. She also asked about the senior → staff promotion timeline. I was honest: the current rubric doesn't have a clear staff path for IC engineers on our team. She appreciated the honesty but I could tell it's weighing on her. Need to work with HR on this.",
+        mood: "concern",
+        tags: ["burnout", "on-call", "promotion", "retention risk"],
+      },
+      {
+        id: "r3",
+        date: "2026-02-28",
+        summary: "Shipped the new search feature — great demo",
+        details: "Search feature launched to production this week. Revathy did the demo at all-hands and it was one of the best internal demos I've seen. Clear, concise, showed real user impact. The feature is already seeing 2x the expected usage. She credited the whole team which is very on-brand for her. I'm going to nominate her for the quarterly impact award. Technically, her approach to the vector search integration was clever — she avoided the over-engineering trap and shipped something simple that works.",
+        mood: "positive",
+        tags: ["shipped", "demo", "recognition", "technical excellence"],
+      },
+      {
+        id: "r4",
+        date: "2026-02-14",
+        summary: "Career growth discussion — interested in architecture track",
+        details: "Dedicated this 1:1 to career development. Revathy wants to move toward a system architect role over the next 2 years. She's not interested in management (she was clear about this). We mapped out a development plan: 1) Lead the microservices RFC, 2) Attend a distributed systems conference, 3) Start doing cross-team architecture reviews. She's also interested in presenting at a meetup. I offered to help her prep. Strong signal that she wants to stay and grow — but only if we can offer the IC advancement path.",
+        mood: "positive",
+        tags: ["career growth", "architecture", "IC track"],
+      },
+      {
+        id: "r5",
+        date: "2026-01-31",
+        summary: "Check-in after reorg — navigating new team dynamics",
+        details: "Post-reorg check-in. Revathy handled the transition well externally but admitted to me she's frustrated. She was moved to the Platform squad but her expertise is in product features. She understands the business reason but feels her skills are being underutilized. I committed to making sure she gets at least one product-facing project per quarter even in the platform role. She accepted that compromise for now but I'm flagging this internally — if we lose her over a reorg decision that doesn't leverage her strengths, that's on us.",
+        mood: "concern",
+        tags: ["reorg", "team dynamics", "retention risk"],
+      },
+    ],
+  },
+  {
+    id: "marcus",
+    name: "Marcus Thompson",
+    role: "Software Engineer II",
+    team: "Product Engineering",
+    startDate: "2025-01-10",
+    avatar: "MT",
+    notes: [
+      {
+        id: "m1",
+        date: "2026-03-28",
+        summary: "Good progress on payment integration — needs code review support",
+        details: "Marcus is making solid progress on the Stripe integration. His code is functional but he's still learning our patterns for error handling and retry logic. I paired with him for 30 minutes and he picked it up quickly. He asked if we could formalize a code review checklist for the team — good instinct. He's starting to think about team-level improvements, not just his own code. I want to encourage this. Personal: he mentioned his wife is pregnant, due in August. He hasn't asked about parental leave yet but I want to make sure he knows the policy.",
+        mood: "positive",
+        tags: ["technical growth", "code quality", "initiative"],
+      },
+      {
+        id: "m2",
+        date: "2026-03-14",
+        summary: "Struggled with the database migration — learning opportunity",
+        details: "Marcus hit a wall with the database migration this sprint. He spent two days on an approach that wouldn't work at scale and didn't ask for help until it was almost too late for the sprint. We had a direct conversation about this. I framed it as: asking for help early is a senior engineer skill, not a weakness. He took it well. The technical gap is in database performance — he hasn't worked with large datasets before. I'm going to pair him with Revathy on the next data-heavy project. He needs exposure, not a lecture.",
+        mood: "neutral",
+        tags: ["technical gap", "feedback", "mentoring opportunity"],
+      },
+      {
+        id: "m3",
+        date: "2026-02-28",
+        summary: "Great collaboration with design team on new feature",
+        details: "Marcus worked directly with the design team on the dashboard redesign this sprint and it went really well. He proactively suggested technical constraints that improved the design (infinite scroll vs. pagination based on our API limitations). The designer specifically called him out in standup as a great partner. This is exactly the kind of cross-functional work I want to see more of from him. He's growing from 'takes tickets and codes them' to 'shapes the product.' That's the SWE II → Senior trajectory.",
+        mood: "positive",
+        tags: ["cross-functional", "product thinking", "growth"],
+      },
+      {
+        id: "m4",
+        date: "2026-02-14",
+        summary: "Performance review follow-up — clear goals set",
+        details: "Follow-up from his annual review. Overall: meeting expectations with bright spots in collaboration and reliability. Areas for growth: technical depth (especially databases and system design) and proactive communication when stuck. We set three goals for Q1: 1) Lead one feature end-to-end including the database schema, 2) Present a tech talk to the team on something he learned, 3) Reduce his average PR cycle time from 3 days to 1.5 days. He seemed motivated. I think these goals are achievable but stretching — which is right.",
+        mood: "neutral",
+        tags: ["performance review", "goals", "development plan"],
+      },
+    ],
+  },
+  {
+    id: "sarah",
+    name: "Sarah Chen",
+    role: "Staff Engineer",
+    team: "Product Engineering",
+    startDate: "2022-09-01",
+    avatar: "SC",
+    notes: [
+      {
+        id: "s1",
+        date: "2026-03-28",
+        summary: "Architecture review for Q2 projects — strong leadership",
+        details: "Sarah presented her architecture review for Q2 projects to the team. She identified three areas of tech debt that will bite us if we don't address them: the auth service coupling, the notification system's lack of retry logic, and the search indexing bottleneck. All three are things I've been worried about but couldn't articulate as clearly. She proposed a prioritized approach that balances new features with debt repayment. I'm going to present her proposal to leadership as-is — it's that good. She also mentioned she'd like to attend the distributed systems conference in May. Approved.",
+        mood: "positive",
+        tags: ["architecture", "tech debt", "leadership", "conference"],
+      },
+      {
+        id: "s2",
+        date: "2026-03-14",
+        summary: "Conversation about scope of influence — wants more product input",
+        details: "Sarah brought up something I've been thinking about too: she wants more input on product direction, not just technical execution. She's right that as a Staff Engineer she should be shaping what we build, not just how. I'm going to invite her to the product planning meetings starting next sprint. She also raised a concern about Marcus's database migration approach before it became a problem — that's the kind of proactive technical leadership I value. I told her so explicitly.",
+        mood: "positive",
+        tags: ["product influence", "staff role", "mentoring"],
+      },
+      {
+        id: "s3",
+        date: "2026-02-28",
+        summary: "Frustrated with hiring pace — worried about team sustainability",
+        details: "Sarah expressed frustration that we've been short-staffed for three months and it's affecting quality. She's right. She's been carrying a heavier load than she should because we haven't backfilled the two positions that opened in December. She's not threatening to leave but the subtext is there. I committed to making hiring my top priority this quarter. She also offered to help with interviewing — specifically, she wants to redesign our system design interview loop. I said yes immediately. She has better judgment about technical talent than I do.",
+        mood: "concern",
+        tags: ["hiring", "workload", "retention risk", "interviewing"],
+      },
+      {
+        id: "s4",
+        date: "2026-02-14",
+        summary: "Skip-level feedback — exec team values her visibility",
+        details: "Shared feedback from David (VP Eng) skip-level: he considers Sarah one of the strongest technical leaders in the org and wants her presenting at the next company all-hands on the platform strategy. She was pleased but also a bit nervous — she's more comfortable in technical settings than executive ones. We talked about how to make the presentation feel natural to her style. She doesn't need to become a polished presenter — she needs to be herself with good structure. Offered to do a dry run with her.",
+        mood: "positive",
+        tags: ["visibility", "exec feedback", "presentation", "development"],
+      },
+      {
+        id: "s5",
+        date: "2026-01-31",
+        summary: "Year-end reflection — considering what's next",
+        details: "End-of-year reflection 1:1. Sarah is in her 3.5th year on the team. She loves the work but is starting to wonder what's next. She's not interested in management. She asked about Principal Engineer as a path. I was honest: we don't have that level defined yet, but I want to create it and she'd be the prototype for the role. She appreciated the candor. I need to work with HR on defining the Principal level this quarter — this is now urgent because I don't want to lose Sarah over a leveling gap we failed to build.",
+        mood: "neutral",
+        tags: ["career growth", "principal engineer", "leveling", "retention"],
+      },
+    ],
+  },
+];

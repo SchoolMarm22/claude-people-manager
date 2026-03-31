@@ -1,312 +1,280 @@
-import { prisma } from "@/lib/db";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { PageHeader } from "@/components/shared/page-header";
-import { StageBadge } from "@/components/shared/stage-badge";
-import { AiBadge } from "@/components/shared/ai-badge";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { ModuleLayout } from "@/components/layout/module-layout";
+import { ChrisNote } from "@/components/shared/chris-note";
 import {
+  ALEX_TIMELINE,
+  PIPELINE_CANDIDATES,
+  PIPELINE_METRICS,
+  type PipelineCandidate,
+} from "@/lib/pipeline-data";
+import {
+  FileText,
   Users,
-  Briefcase,
-  MessageSquare,
+  UserCheck,
+  Clock,
+  CheckCircle,
+  Circle,
+  ArrowRight,
   AlertTriangle,
-  ArrowUpRight,
-  RefreshCw,
-  Sparkles,
-  GitCompareArrows,
 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+const STAGE_COLORS: Record<string, string> = {
+  applied: "bg-gray-100 text-gray-700",
+  screening: "bg-blue-100 text-blue-700",
+  "interview-prep": "bg-indigo-100 text-indigo-700",
+  interviewing: "bg-purple-100 text-purple-700",
+  debrief: "bg-amber-100 text-amber-700",
+  offer: "bg-green-100 text-green-700",
+  onboarding: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-red-100 text-red-600",
+};
 
-export default async function DashboardPage() {
-  const [candidates, jobReqs, interviews, recentCandidates] =
-    await Promise.all([
-      prisma.candidate.groupBy({
-        by: ["stage"],
-        _count: { id: true },
-      }),
-      prisma.jobRequisition.findMany({
-        where: { status: "open" },
-        include: { _count: { select: { candidates: true } } },
-      }),
-      prisma.interview.findMany({
-        where: { status: "scheduled" },
-        include: { candidate: true },
-        orderBy: { scheduledAt: "asc" },
-        take: 5,
-      }),
-      prisma.candidate.findMany({
-        orderBy: { appliedAt: "desc" },
-        take: 5,
-        include: { jobReq: true, screeningResult: true },
-      }),
-    ]);
-
-  const stageMap = Object.fromEntries(
-    candidates.map((c) => [c.stage, c._count.id])
-  );
-  const totalCandidates = candidates.reduce(
-    (sum, c) => sum + c._count.id,
-    0
-  );
-  const needsScreening = stageMap["applied"] || 0;
-  const inInterview = stageMap["interview"] || 0;
-  const pendingOffer = stageMap["offer"] || 0;
-
-  return (
-    <div className="px-8 py-6">
-      <PageHeader
-        title="Dashboard"
-        description="Overview of your people pipeline"
-      />
-
-      {/* Stat cards */}
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Total Candidates"
-          value={totalCandidates}
-          sub={`Across ${jobReqs.length} open roles`}
-          icon={Users}
-        />
-        <StatCard
-          label="Needs Screening"
-          value={needsScreening}
-          sub="Awaiting AI-assisted review"
-          icon={AlertTriangle}
-          accent
-        />
-        <StatCard
-          label="In Interviews"
-          value={inInterview}
-          sub="Active interview loops"
-          icon={MessageSquare}
-        />
-        <StatCard
-          label="Pending Offers"
-          value={pendingOffer}
-          sub="Ready for offer stage"
-          icon={Briefcase}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left column: Open Roles + Recent */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* Open Roles */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[15px]">Open Roles</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y">
-                {jobReqs.map((req) => (
-                  <div
-                    key={req.id}
-                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
-                  >
-                    <div>
-                      <Link
-                        href={`/hiring?req=${req.id}`}
-                        className="text-sm font-medium hover:text-primary transition-colors"
-                      >
-                        {req.title}
-                        <ArrowUpRight className="ml-1 inline h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        {req.department} &middot; {req.level}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground">
-                      {req._count.candidates}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Applications */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[15px]">
-                Recent Applications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y">
-                {recentCandidates.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/candidates/${c.id}`}
-                        className="text-sm font-medium hover:text-primary transition-colors"
-                      >
-                        {c.firstName} {c.lastName}
-                      </Link>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {c.jobReq.title}
-                      </p>
-                    </div>
-                    <StageBadge stage={c.stage} size="sm" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right column: AI Insights + Upcoming */}
-        <div className="space-y-6">
-          {/* AI Insights */}
-          <Card className="border-primary/20 bg-primary/[0.02]">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-[15px]">AI Insights</CardTitle>
-                <AiBadge />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <InsightCard
-                icon={RefreshCw}
-                title="Repeat Candidate Detected"
-                description="James Chen has reapplied for Senior Software Engineer. Previous application was Sept 2025 — he's been promoted since."
-                variant="warn"
-              />
-              <InsightCard
-                icon={GitCompareArrows}
-                title="Interview Divergence"
-                description='Marcus Johnson: "strong hire" from behavioral, "no hire" from technical. Investigate before bar raiser.'
-                variant="info"
-              />
-              <InsightCard
-                icon={Sparkles}
-                title={`${needsScreening} Awaiting Screening`}
-                description="Use the AI screener to evaluate new applicants with structured, transparent scoring."
-                variant="default"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Interviews */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-[15px]">
-                Upcoming Interviews
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {interviews.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  No upcoming interviews
-                </p>
-              ) : (
-                <div className="divide-y">
-                  {interviews.map((i) => (
-                    <div key={i.id} className="py-3 first:pt-0 last:pb-0">
-                      <Link
-                        href={`/candidates/${i.candidateId}`}
-                        className="text-sm font-medium hover:text-primary transition-colors"
-                      >
-                        {i.candidate.firstName} {i.candidate.lastName}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        {i.interviewType} &middot; {i.interviewerName}
-                      </p>
-                      <p className="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
-                        {new Date(i.scheduledAt).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
+function MetricCard({
+  icon: Icon,
   label,
   value,
-  sub,
-  icon: Icon,
-  accent,
+  sublabel,
 }: {
+  icon: typeof FileText;
   label: string;
-  value: number;
-  sub: string;
-  icon: typeof Users;
-  accent?: boolean;
+  value: string | number;
+  sublabel?: string;
 }) {
   return (
-    <Card className={accent ? "border-primary/20 bg-primary/[0.03]" : ""}>
-      <CardContent className="pt-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              {label}
-            </p>
-            <p className="mt-1 font-mono text-3xl font-semibold tabular-nums">
-              {value}
-            </p>
-          </div>
-          <div className={accent ? "rounded-md bg-primary/10 p-2" : "rounded-md bg-muted p-2"}>
-            <Icon className={`h-4 w-4 ${accent ? "text-primary" : "text-muted-foreground"}`} />
-          </div>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border border-[#E8E5E0] bg-white p-4">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-[#D97757]" />
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9B9B9B]">
+          {label}
+        </p>
+      </div>
+      <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">{value}</p>
+      {sublabel && (
+        <p className="mt-0.5 text-[11px] text-[#9B9B9B]">{sublabel}</p>
+      )}
+    </div>
   );
 }
 
-function InsightCard({
-  icon: Icon,
-  title,
-  description,
-  variant = "default",
+function TimelineNode({
+  event,
+  isLast,
 }: {
-  icon: typeof Sparkles;
-  title: string;
-  description: string;
-  variant?: "default" | "warn" | "info";
+  event: (typeof ALEX_TIMELINE)[0];
+  isLast: boolean;
 }) {
-  const styles = {
-    default: "border-border bg-card",
-    warn: "border-amber-200/60 bg-amber-50/50",
-    info: "border-blue-200/60 bg-blue-50/50",
-  };
-
-  const iconStyles = {
-    default: "text-muted-foreground",
-    warn: "text-amber-600",
-    info: "text-blue-600",
+  const statusStyles = {
+    complete: "bg-green-500 border-green-500",
+    current: "bg-[#D97757] border-[#D97757] ring-4 ring-[#D97757]/20",
+    upcoming: "bg-white border-[#E8E5E0]",
   };
 
   return (
-    <div className={`rounded-lg border p-3 ${styles[variant]}`}>
-      <div className="flex gap-2.5">
-        <Icon className={`mt-0.5 h-3.5 w-3.5 flex-shrink-0 ${iconStyles[variant]}`} />
-        <div>
-          <p className="text-[13px] font-medium leading-tight">{title}</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            {description}
-          </p>
+    <div className="flex gap-4">
+      {/* Timeline line + dot */}
+      <div className="flex flex-col items-center">
+        <div
+          className={`h-3 w-3 flex-shrink-0 rounded-full border-2 ${statusStyles[event.status]}`}
+        />
+        {!isLast && <div className="w-0.5 flex-1 bg-[#E8E5E0]" />}
+      </div>
+
+      {/* Content */}
+      <div className={`pb-6 ${isLast ? "pb-0" : ""}`}>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-medium text-[#9B9B9B]">
+            {new Date(event.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+          <span className="rounded-full bg-[#F5F3EF] px-2 py-0.5 text-[10px] font-medium text-[#6B6B6B]">
+            {event.stage}
+          </span>
         </div>
+        <p className="mt-1 text-sm font-medium text-[#1A1A1A]">
+          {event.title}
+        </p>
+        <p className="mt-0.5 text-xs leading-relaxed text-[#6B6B6B]">
+          {event.description}
+        </p>
+        <Link
+          href={event.moduleLink}
+          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-[#D97757] hover:text-[#C4684A]"
+        >
+          View in module <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
     </div>
+  );
+}
+
+function CandidateRow({ candidate }: { candidate: PipelineCandidate }) {
+  return (
+    <div className="flex items-center gap-4 border-b border-[#E8E5E0] px-4 py-3 last:border-b-0">
+      <div className="flex-1">
+        <p className="text-sm font-medium">{candidate.name}</p>
+        <p className="text-[11px] text-[#9B9B9B]">{candidate.role}</p>
+      </div>
+      <span
+        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+          STAGE_COLORS[candidate.stage] || STAGE_COLORS.applied
+        }`}
+      >
+        {candidate.stageLabel}
+      </span>
+      {candidate.score !== undefined && (
+        <span className="font-mono text-xs text-[#6B6B6B]">
+          {candidate.score}/10
+        </span>
+      )}
+      <span className="text-[10px] text-[#9B9B9B]">{candidate.source}</span>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const [showRejected, setShowRejected] = useState(false);
+  const activeCandidates = PIPELINE_CANDIDATES.filter(
+    (c) => c.stage !== "rejected"
+  );
+  const rejectedCandidates = PIPELINE_CANDIDATES.filter(
+    (c) => c.stage === "rejected"
+  );
+
+  return (
+    <ModuleLayout
+      title="Dashboard"
+      description="The command center — at-a-glance pipeline health, candidate journeys, and hiring velocity."
+      status="demo"
+    >
+      <ChrisNote>
+        <p>
+          If this tool is the operating system for people managers, this
+          dashboard is the command center. At a glance: how many positions are
+          open, where are candidates in the pipeline, what needs attention today?
+        </p>
+        <p>
+          Below you can see Alex Rivera&apos;s full journey — from application to
+          onboarding — threading through every module in this demo. Each node
+          links to the relevant feature page. That&apos;s the unified view that makes
+          this more than a collection of tools.
+        </p>
+      </ChrisNote>
+
+      {/* Metrics Row */}
+      <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <MetricCard
+          icon={FileText}
+          label="Active Postings"
+          value={PIPELINE_METRICS.activePostings}
+          sublabel={
+            PIPELINE_METRICS.postingNames.slice(0, 2).join(", ") + "..."
+          }
+        />
+        <MetricCard
+          icon={Users}
+          label="In Pipeline"
+          value={PIPELINE_METRICS.inPipeline}
+          sublabel={`${PIPELINE_METRICS.inScreening} screening, ${PIPELINE_METRICS.inInterview} interview`}
+        />
+        <MetricCard
+          icon={UserCheck}
+          label="Offers / Onboarding"
+          value={`${PIPELINE_METRICS.offersExtended} / ${PIPELINE_METRICS.onboarding}`}
+        />
+        <MetricCard
+          icon={Clock}
+          label="Avg. Time to Hire"
+          value={PIPELINE_METRICS.avgTimeToHire}
+        />
+        <MetricCard
+          icon={CheckCircle}
+          label="Avg. Screen Score"
+          value={PIPELINE_METRICS.avgScreeningScore}
+          sublabel="across all specs"
+        />
+      </div>
+
+      {/* Two columns: Timeline + Pipeline Table */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Left: Alex Rivera Timeline */}
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">
+              Candidate Journey: Alex Rivera
+            </h2>
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+              Onboarding
+            </span>
+          </div>
+          <div className="rounded-lg border border-[#E8E5E0] bg-white p-5">
+            {ALEX_TIMELINE.map((event, i) => (
+              <TimelineNode
+                key={event.stage}
+                event={event}
+                isLast={i === ALEX_TIMELINE.length - 1}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Right: Pipeline Table */}
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">
+              All Candidates ({PIPELINE_CANDIDATES.length})
+            </h2>
+            <div className="flex gap-1">
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] text-blue-700">
+                {PIPELINE_METRICS.inScreening} screening
+              </span>
+              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] text-purple-700">
+                {PIPELINE_METRICS.inInterview} interview
+              </span>
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] text-amber-700">
+                {PIPELINE_METRICS.inDebrief} debrief
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-[#E8E5E0] bg-white">
+            <div className="flex items-center gap-4 border-b border-[#E8E5E0] bg-[#FAFAF8] px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#9B9B9B]">
+              <span className="flex-1">Candidate</span>
+              <span>Stage</span>
+              <span>Score</span>
+              <span>Source</span>
+            </div>
+            {activeCandidates.map((c) => (
+              <CandidateRow key={c.id} candidate={c} />
+            ))}
+          </div>
+
+          <button
+            onClick={() => setShowRejected(!showRejected)}
+            className="mt-3 flex items-center gap-1.5 text-xs text-[#9B9B9B] hover:text-[#6B6B6B]"
+          >
+            {showRejected ? (
+              <Circle className="h-3 w-3" />
+            ) : (
+              <AlertTriangle className="h-3 w-3" />
+            )}
+            {showRejected ? "Hide" : "Show"} not moving forward (
+            {rejectedCandidates.length})
+          </button>
+
+          {showRejected && (
+            <div className="mt-2 rounded-lg border border-[#E8E5E0] bg-white opacity-60">
+              {rejectedCandidates.map((c) => (
+                <CandidateRow key={c.id} candidate={c} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </ModuleLayout>
   );
 }
