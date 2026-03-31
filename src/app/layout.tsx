@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { TopNav } from "@/components/layout/top-nav";
-import { BuilderNotesProvider } from "@/components/shared/builder-notes-provider";
-import { BuilderNotesToggle } from "@/components/shared/builder-notes-toggle";
+import { Sidebar } from "@/components/layout/sidebar";
+import { AppFooter } from "@/components/layout/app-footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,12 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full font-sans">
-        <BuilderNotesProvider>
-          <TopNav />
-          <main>{children}</main>
-          <BuilderNotesToggle />
-        </BuilderNotesProvider>
+      <body className="flex h-full overflow-hidden font-sans">
+        <Sidebar />
+        <main className="flex flex-1 flex-col overflow-y-auto">
+          <div className="flex-1">{children}</div>
+          <AppFooter />
+        </main>
       </body>
     </html>
   );

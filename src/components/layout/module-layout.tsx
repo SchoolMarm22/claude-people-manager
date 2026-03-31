@@ -1,7 +1,4 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-type ModuleStatus = "live" | "demo" | "vision";
+type ModuleStatus = "live" | "demo" | "vision" | "blank";
 
 const STATUS_CONFIG: Record<ModuleStatus, { label: string; className: string }> = {
   live: {
@@ -14,7 +11,11 @@ const STATUS_CONFIG: Record<ModuleStatus, { label: string; className: string }> 
   },
   vision: {
     label: "Vision",
-    className: "bg-gray-50 text-gray-600 border-gray-200",
+    className: "bg-violet-50 text-violet-600 border-violet-200",
+  },
+  blank: {
+    label: "Concept",
+    className: "bg-violet-50 text-violet-600 border-violet-200",
   },
 };
 
@@ -32,31 +33,21 @@ export function ModuleLayout({
   const badge = STATUS_CONFIG[status];
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[#6B6B6B] transition-colors hover:text-[#D97757]"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Overview
-      </Link>
-
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-[32px] font-semibold leading-10 tracking-tight">
-              {title}
-            </h1>
-            <span
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${badge.className}`}
-            >
-              {badge.label}
-            </span>
-          </div>
-          <p className="mt-1.5 text-[15px] leading-relaxed text-[#6B6B6B]">
-            {description}
-          </p>
+    <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="mb-8">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {title}
+          </h1>
+          <span
+            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${badge.className}`}
+          >
+            {badge.label}
+          </span>
         </div>
+        <p className="mt-1.5 text-sm leading-relaxed text-[#6B6B6B]">
+          {description}
+        </p>
       </div>
 
       {children}
