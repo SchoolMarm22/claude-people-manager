@@ -213,7 +213,7 @@ export default function McpServerPage() {
             <div>
               <p className="text-sm font-medium">Clone the repo and install</p>
               <code className="block rounded bg-[#F5F3EF] px-2 py-1 text-xs text-[#6B6B6B]">
-                git clone https://github.com/chris-martin-dev/claude-people-manager.git &amp;&amp; cd claude-people-manager &amp;&amp; npm install
+                git clone https://github.com/SchoolMarm22/claude-people-manager.git &amp;&amp; cd claude-people-manager &amp;&amp; npm install
               </code>
             </div>
           </div>

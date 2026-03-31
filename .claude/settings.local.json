@@ -6,7 +6,15 @@
       "Bash(yes:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(kill 24821)",
+      "Bash(kill 51961)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(against another\" hooks reviewers into the most impressive demo:*)",
+      "Bash(English into other things\" insight before reviewers see any features.:*)",
+      "Bash(rm -f /Users/christophermartin/claude-people-manager/.git/index.lock)"
     ]
   }
 }
