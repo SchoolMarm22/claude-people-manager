@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModuleLayout } from "@/components/layout/module-layout";
-import { BuilderNote } from "@/components/shared/builder-note";
+import { ChrisNote } from "@/components/shared/chris-note";
 import { ONBOARDING_COMPANY, ONBOARDING_TEAM } from "@/lib/mock-data";
 import { CheckCircle, Circle, Clock, ArrowRight } from "lucide-react";
 
@@ -126,17 +126,46 @@ export default function OnboardingPage() {
       description="Spec-driven ramp plans that distinguish between company-level and team-level onboarding — informed by interview signal."
       status="demo"
     >
+      <ChrisNote>
+        <p>
+          Onboarding is very team-specific, which is why a spec-driven process is
+          so helpful here. There&apos;s company-level onboarding (HR, IT, compliance)
+          and team-level onboarding (tools, codebase, introductions).
+        </p>
+        <p>
+          We may need API access to Jira/Linear for tickets, or other tracking
+          systems. Is their laptop finished by IT? Have they completed required
+          trainings (HR, PCI, OWASP)? Have background checks cleared? This can
+          provide a manager with an at-a-glance understanding of where their new
+          hire is.
+        </p>
+        <p>
+          If you onboard 1 person, that&apos;s easy enough.{" "}
+          <strong>
+            I once had to onboard 8 devs in India all at once, and it was tough
+            from a paperwork perspective!
+          </strong>
+        </p>
+        <p>
+          Then there is team-level onboarding — tooling setup, account setup,
+          code base tours, introductions. There is a perfect way to condense this
+          down into spec files, or using tools (looking at you Claude Code and
+          Claude Cowork) to help get new hires up to speed ASAP. Basically, ask
+          these LLMs instead of having a person hold your hand.
+        </p>
+      </ChrisNote>
+
       {/* Context */}
       <div className="mb-6 rounded-lg border border-[#E8E5E0] bg-white p-5">
         <p className="text-sm">
-          Onboarding <strong>{ONBOARDING_COMPANY.employee}</strong> ·
+          Onboarding <strong>{ONBOARDING_COMPANY.employee}</strong> &middot;
           Start date:{" "}
           {new Date(ONBOARDING_COMPANY.startDate).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
             year: "numeric",
           })}{" "}
-          · Manager: {ONBOARDING_COMPANY.manager}
+          &middot; Manager: {ONBOARDING_COMPANY.manager}
         </p>
         <div className="mt-3 flex gap-2 rounded-md border border-[#D97757]/20 bg-[#D97757]/5 p-3">
           <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-[#D97757]" />
@@ -168,22 +197,6 @@ export default function OnboardingPage() {
           totalCount={ONBOARDING_TEAM.items.length}
         />
       </div>
-
-      <BuilderNote>
-        Company-level onboarding is roughly the same everywhere. Team-level is where it gets interesting — and where most companies fail. A spec file per team means the DevOps team&apos;s onboarding looks nothing like the Design team&apos;s, which is correct.
-      </BuilderNote>
-
-      <BuilderNote>
-        The &ldquo;Ask Claude, not your neighbor&rdquo; item is a real architectural decision. New hires generate enormous interrupt load on existing team members. An AI knowledge tool that can answer &ldquo;where is the staging environment?&rdquo; or &ldquo;how do we deploy?&rdquo; reduces ramp time AND protects team productivity.
-      </BuilderNote>
-
-      <BuilderNote>
-        I once onboarded 8 developers simultaneously across time zones. Company-level onboarding was the bottleneck — not because it was hard, but because tracking 8 people × 15 checklist items across 3 departments was pure overhead. This is a coordination problem, and coordination problems are where software earns its keep.
-      </BuilderNote>
-
-      <BuilderNote>
-        In production, these checklists would integrate with Jira/Linear for ticket tracking, Okta/Google Workspace for account provisioning, and the team&apos;s existing documentation platform. The spec file defines WHAT needs to happen; integrations handle the HOW.
-      </BuilderNote>
     </ModuleLayout>
   );
 }

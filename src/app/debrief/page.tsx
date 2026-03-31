@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModuleLayout } from "@/components/layout/module-layout";
-import { BuilderNote } from "@/components/shared/builder-note";
+import { ChrisNote } from "@/components/shared/chris-note";
 import {
   CANDIDATE_ALEX,
   INTERVIEWER_SCORECARDS,
@@ -29,17 +29,46 @@ export default function DebriefPage() {
 
   return (
     <ModuleLayout
-      title="Interview Debrief"
+      title="Interview Notes"
       description="Cross-interviewer synthesis that surfaces consensus, contradictions, and potential bias — so the hiring committee can have a better conversation."
       status="demo"
     >
+      <ChrisNote>
+        <p>
+          This one is a big challenge at my current position. We have a shared
+          Trello board that people leave notes (of extremely variable quality)
+          on candidates&apos; cards. That helps track people who&apos;ve interviewed
+          multiple times, but typically it&apos;s just the hiring manager typing out
+          a sentence — maybe 3 — with a yes or no on next steps.
+        </p>
+        <p>
+          Systematizing the feedback, across rounds and interviewers, provides a
+          much more comprehensive view of the candidate. Assessments can be
+          quantified, and various text inputs can be added based on the spec file
+          for the requirements!
+        </p>
+        <p>
+          And LLMs can summarize all of the various commenters&apos; notes and
+          assessments, and most interestingly — they can also{" "}
+          <strong>highlight internal disagreements!</strong> Finding points of
+          friction vs. points of agreement is a valuable signal to a team!
+        </p>
+        <p>
+          Additionally, the interviewers themselves can be assessed. Does
+          Interviewer A always rank a gender lower? Does Interviewer B uniformly
+          provide negative feedback? Does Interviewer C just phone it in, adding
+          &ldquo;LGTM&rdquo;? These internal patterns can help hiring managers
+          improve their interview pipelines!
+        </p>
+      </ChrisNote>
+
       {/* Candidate header */}
       <div className="mb-6 rounded-lg border border-[#E8E5E0] bg-white p-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-lg font-medium">{CANDIDATE_ALEX.name}</p>
             <p className="text-sm text-[#6B6B6B]">
-              {CANDIDATE_ALEX.role} · Applied{" "}
+              {CANDIDATE_ALEX.role} &middot; Applied{" "}
               {new Date(CANDIDATE_ALEX.applied).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -82,7 +111,7 @@ export default function DebriefPage() {
           <div>
             <p className="text-[15px] font-medium">{card.interviewer}</p>
             <p className="text-xs text-[#6B6B6B]">
-              {card.title} · {card.interviewType}
+              {card.title} &middot; {card.interviewType}
             </p>
           </div>
           <span
@@ -273,18 +302,6 @@ export default function DebriefPage() {
           </p>
         </div>
       </div>
-
-      <BuilderNote>
-        The most important output isn&apos;t the recommendation — it&apos;s the Contradictions section. Hiring committees tend to converge around whoever speaks loudest. Surfacing specific disagreements forces the committee to actually resolve them instead of glossing over them.
-      </BuilderNote>
-
-      <BuilderNote>
-        This is fully mock data, but the output format is what a production version would generate via Claude API. The interviewer scorecards would come from Greenhouse&apos;s structured feedback forms. See the Screening module for the live Claude integration.
-      </BuilderNote>
-
-      <BuilderNote>
-        Bias flags are structurally integrated, not an afterthought audit. The system checks: did any interviewer&apos;s assessment correlate with something other than job-relevant criteria? This doesn&apos;t accuse — it asks the question. See ADR-002 for the full eval strategy.
-      </BuilderNote>
     </ModuleLayout>
   );
 }

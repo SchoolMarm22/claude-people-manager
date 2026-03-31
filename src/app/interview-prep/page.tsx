@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ModuleLayout } from "@/components/layout/module-layout";
-import { BuilderNote } from "@/components/shared/builder-note";
+import { ChrisNote } from "@/components/shared/chris-note";
 import { SPECS, type SpecKey } from "@/lib/sample-specs";
 import { CHRIS_RESUME } from "@/lib/chris-resume";
 import { MOCK_INTERVIEW_PREP } from "@/lib/mock-data";
@@ -48,7 +48,11 @@ export default function InterviewPrepPage() {
           spec: SPECS[activeSpec].content,
           role_title: activeSpec === "fullstack-startup"
             ? "Full-Stack Software Engineer"
-            : "Senior Front-End Engineer (Angular)",
+            : activeSpec === "angular-specialist"
+            ? "Senior Front-End Engineer (Angular)"
+            : activeSpec === "marketing-growth"
+            ? "Growth Marketing Manager"
+            : "Content Marketing Lead",
         }),
       });
       if (!res.ok) throw new Error("API call failed");
@@ -68,9 +72,30 @@ export default function InterviewPrepPage() {
       description="Given a candidate's resume and role spec, Claude generates tailored interview questions with context for the interviewer — not the candidate."
       status="live"
     >
-      <BuilderNote>
-        We COULD have Claude conduct the interview itself. We intentionally chose not to. These are potential colleagues — they deserve a human conversation. AI&apos;s role here is to make the human interviewer better prepared, not to replace them.
-      </BuilderNote>
+      <ChrisNote>
+        <p>
+          This is an area where, as a hiring manager, I personally struggle. I&apos;m
+          in the middle of things and I have to jump on a 30-minute screening call.
+          I often end up defaulting to a stock list of questions while I re-review
+          their resume.
+        </p>
+        <p>
+          It&apos;s not empathetic with the interviewee and I end up making snap
+          judgements based on some questions I always use.
+        </p>
+        <p>
+          Having an LLM draw up a list of questions and items to investigate
+          personalizes the interview. It can compare the application and resume
+          with the posting and spec requirements, to find areas of congruence to
+          dive into, and interesting follow-up questions or differences. It can
+          find assertions to push back on, generate deeper questions, etc.
+        </p>
+        <p>
+          It can even output a quick summary of the candidate as a much-needed
+          refresher when you&apos;re going through 6 interviews in a day.{" "}
+          <strong>This is something I really wish I had at my current position!</strong>
+        </p>
+      </ChrisNote>
 
       {/* Controls */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -116,7 +141,7 @@ export default function InterviewPrepPage() {
               Candidate
             </h3>
             <p className="text-lg font-medium">Chris Martin</p>
-            <p className="text-xs text-[#6B6B6B]">Engineering Manager · Denver, CO</p>
+            <p className="text-xs text-[#6B6B6B]">Engineering Manager &middot; Denver, CO</p>
             <div className="mt-4 max-h-[400px] overflow-y-auto rounded-md bg-[#F5F3EF] p-3 font-mono text-[10px] leading-relaxed text-[#4A4A4A]">
               {CHRIS_RESUME.split("\n").slice(0, 30).join("\n")}
               <span className="text-[#9B9B9B]">
@@ -234,18 +259,6 @@ export default function InterviewPrepPage() {
           )}
         </div>
       </div>
-
-      <BuilderNote>
-        The &ldquo;Why this question&rdquo; annotations serve two purposes: they help interviewers understand the method, and they create a feedback loop — if an interviewer consistently ignores certain question types, that&apos;s data about interviewer calibration.
-      </BuilderNote>
-
-      <BuilderNote>
-        The &ldquo;Experience Verification&rdquo; category exists because of a specific problem: candidates who were on a team that did something impressive vs. candidates who drove that work. LLMs are good at generating questions that tease this apart because they can cross-reference specific resume claims.
-      </BuilderNote>
-
-      <BuilderNote>
-        In production, generated questions would be stored alongside the candidate record, and post-interview, the interviewer&apos;s notes would map back to which questions they actually asked. This creates a dataset for improving question generation over time.
-      </BuilderNote>
     </ModuleLayout>
   );
 }
