@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { ModuleLayout } from "@/components/layout/module-layout";
-import { BuilderNote } from "@/components/shared/builder-note";
+import { ChrisNote } from "@/components/shared/chris-note";
+import { InboundFlow } from "@/components/diagrams/inbound-flow";
 import { SPECS, type SpecKey } from "@/lib/sample-specs";
 import { CHRIS_RESUME } from "@/lib/chris-resume";
+import { MOCK_RESUMES } from "@/lib/mock-resumes";
 import { MOCK_SCREENING_RESULT } from "@/lib/mock-data";
 import { Loader2, Sparkles } from "lucide-react";
 
@@ -17,13 +19,28 @@ const SIGNAL_COLORS: Record<string, string> = {
   none: "bg-gray-100 text-gray-600",
 };
 
+const ALL_RESUMES = [
+  { id: "chris-martin", name: "Chris Martin", label: "Chris Martin", sublabel: "EM / Portfolio", content: CHRIS_RESUME },
+  ...MOCK_RESUMES.map((r) => ({ ...r, sublabel: r.label })),
+];
+
 export default function ScreeningPage() {
   const [activeSpec, setActiveSpec] = useState<SpecKey>("fullstack-startup");
   const [specContent, setSpecContent] = useState(SPECS["fullstack-startup"].content);
+  const [activeResume, setActiveResume] = useState("chris-martin");
   const [resumeText, setResumeText] = useState(CHRIS_RESUME);
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [fallback, setFallback] = useState(false);
+
+  function handleResumeSwitch(id: string) {
+    const resume = ALL_RESUMES.find((r) => r.id === id);
+    if (!resume) return;
+    setActiveResume(id);
+    setResumeText(resume.content);
+    setResult(null);
+    setFallback(false);
+  }
 
   function handleSpecSwitch(key: SpecKey) {
     setActiveSpec(key);
@@ -58,9 +75,52 @@ export default function ScreeningPage() {
       description="AI resume analysis powered by manager-defined spec files. Edit the spec, swap between managers, and see how the same resume gets different assessments."
       status="live"
     >
-      <BuilderNote>
-        Traditional ATS systems match keywords. This misses context: &ldquo;full-stack at a 5-person startup&rdquo; is qualitatively different from &ldquo;full-stack at Meta.&rdquo; Spec files let managers express that nuance in natural language. The same resume evaluated against different specs produces meaningfully different results — and that&apos;s the point.
-      </BuilderNote>
+      <ChrisNote>
+        <p>
+          This is the critical area in my opinion. Prospective employees and
+          hiring managers are in an AI arms race. It&apos;s trivial now for people
+          to apply to thousands of positions, so hiring managers have a massive
+          number of applications to review.
+        </p>
+        <p>LLM review as a first pass helps with several things:</p>
+        <p>
+          <strong>1)</strong> It can help remove latent bias from the process.{" "}
+          <strong>2)</strong> It can screen a candidate more holistically than ATS
+          keyword monitors. <strong>3)</strong> It can take in personalized
+          screening criteria via spec files.
+        </p>
+        <p>
+          This third point is the one that gets me the most excited! Consider:
+          Candidate A was a full stack dev at Meta for 3 years. Candidate B was a
+          full stack dev at a seed-funded startup for 3 years. On paper, very
+          similar — but a spec file lets the hiring manager inject the{" "}
+          <em>art</em> they use when screening. We&apos;re comparing: the posting,
+          the application, the spec file — and having an LLM assess and critique
+          the applicant. Try switching specs below to see this in action!
+        </p>
+        <p>
+          <strong>Technical Note:</strong> We&apos;d need APIs to pull applicants in,
+          tag with unique identifiers, and store their data. Since resumes contain
+          PII (email, phone, address), security is a real concern — not just
+          externally, but internally too. Finding ways of presenting resumes while
+          obfuscating PII is an interesting design challenge.
+        </p>
+      </ChrisNote>
+
+      {/* Instructions */}
+      <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+        <p className="text-sm font-medium text-blue-800">
+          How to use this demo
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-blue-700/80">
+          Pick a <strong>hiring spec</strong> on the left (each represents a
+          different manager&apos;s criteria) and a <strong>resume</strong> in the
+          center. Then click <strong>&ldquo;Run Screening&rdquo;</strong> to see
+          Claude evaluate the resume against that spec in real time. Try
+          switching specs to see how the same resume gets dramatically different
+          scores based on what the team actually needs.
+        </p>
+      </div>
 
       {/* Three-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -70,18 +130,21 @@ export default function ScreeningPage() {
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9B9B9B]">
               Hiring Spec File
             </p>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1.5">
               {(Object.keys(SPECS) as SpecKey[]).map((key) => (
                 <button
                   key={key}
                   onClick={() => handleSpecSwitch(key)}
-                  className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  className={`rounded-md px-2.5 py-1.5 text-left transition-colors ${
                     activeSpec === key
                       ? "bg-[#D97757] text-white"
                       : "bg-[#F5F3EF] text-[#6B6B6B] hover:bg-[#E8E5E0]"
                   }`}
                 >
-                  {SPECS[key].manager}
+                  <span className="block text-[11px] font-medium">{SPECS[key].manager}</span>
+                  <span className={`block text-[9px] ${activeSpec === key ? "text-white/70" : "text-[#9B9B9B]"}`}>
+                    {SPECS[key].label.replace(/^.*?—\s*/, "").slice(0, 30)}
+                  </span>
                 </button>
               ))}
             </div>
@@ -97,12 +160,27 @@ export default function ScreeningPage() {
         {/* Center: Resume Viewer */}
         <div className="flex flex-col rounded-lg border border-[#E8E5E0] bg-white">
           <div className="border-b border-[#E8E5E0] px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9B9B9B]">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9B9B9B]">
               Resume
             </p>
-            <p className="mt-0.5 text-xs text-[#9B9B9B]">
-              Pre-loaded with Chris Martin&apos;s resume. Paste another to compare.
-            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_RESUMES.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => handleResumeSwitch(r.id)}
+                  className={`rounded-md px-2.5 py-1.5 text-left transition-colors ${
+                    activeResume === r.id
+                      ? "bg-[#1A1A1A] text-white"
+                      : "bg-[#F5F3EF] text-[#6B6B6B] hover:bg-[#E8E5E0]"
+                  }`}
+                >
+                  <span className="block text-[11px] font-medium">{r.name}</span>
+                  <span className={`block text-[9px] ${activeResume === r.id ? "text-white/60" : "text-[#9B9B9B]"}`}>
+                    {r.sublabel}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
           <textarea
             value={resumeText}
@@ -277,17 +355,9 @@ export default function ScreeningPage() {
         </div>
       </div>
 
-      <BuilderNote>
-        The Bias Check section exists because AI screening at scale amplifies any bias present in the spec. Making bias visibility a default output — not an opt-in audit — is an architectural decision about what kind of tool this should be. See ADR-002 for the full eval strategy.
-      </BuilderNote>
-
-      <BuilderNote>
-        Notice that different specs produce different assessments of the same resume. This is by design. Cindi and James have legitimately different needs — Cindi wants startup instincts, James wants deep Angular expertise. The tool respects that instead of imposing a universal scoring rubric.
-      </BuilderNote>
-
-      <BuilderNote>
-        In production, this module would pull applications from Greenhouse via MCP connectors, store assessments in a persistent database, and feed into a candidate pipeline view. The spec file would live in version control so teams can iterate on evaluation criteria collaboratively. See ADR-003 for the MCP integration architecture.
-      </BuilderNote>
+      <div className="mt-8">
+        <InboundFlow />
+      </div>
     </ModuleLayout>
   );
 }
